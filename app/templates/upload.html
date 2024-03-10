@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+<!--  enctype="multipart/form-data" -->
+{% block content %}
+<form id="upload-form" method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="submit" value="Upload">
+</form>
+
+<script>
+  function uploadItem() {
+    endpoint = "{% url 'api:items' %}"
+    const form = document.getElementById('upload-form')
+
+    fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        // 'Accept': 'application/json',
+        'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundaryb0Ctt2zKN5yWNqDD',
+        // 'Accept': 'multipart/form-data',
+        //'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: new FormData(form)
+    })
+    .then(r => r.json())
+    .then(data => {
+      console.log(data)
+    })
+    .catch(error => {
+        console.log('Error:', error);
+        // Handle error
+    })
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% block filter %}
+{% endblock %}
+
+<div id="navigate-page">
+  <button class="prev">Prev</button>
+  <button class="next">Next</button>
+</div>
+
+<ul class="container">
+  {% for item in data.results %}
+    <li class="frame home-item" data-id="{{ item.id }}">
+      <p>{{ item.name }}</p>
+      <img src="{{ item.image }}" alt="" width="100%" height="200px"><br>
+      {% block approved-status %}
+      {% endblock %}
+      <div class="action-area">
+        <button onclick="download('{{ item.id }}', '{{ item.image }}')">Download</button>
+        <button onclick="addToCart('{{ item.id }}')">Add to cart</button>
+        {% block extra_actions %}
+        {% endblock %}
+      </div>
+    </li>
+  {% endfor %}
+</ul>
+
+{% block scripts %}
+{% endblock %}
+
+<script>
+  function addToCart(item_id) {
+    var endpoint = "{% url 'api:single_item' pk=0 %}".replace("0", item_id)
+    
+    fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: '{}'
+    })
+    .then(response => {
+      if (response.status == 200) {
+        alert("Add successfully")
+      }
+      else {
+        alert("You've already added this item")
+      }
+    })
+  }
+
+  document.querySelector('#navigate-page .next').addEventListener('click', () => {
+    urlString = '{{ data.next }}'
+    if (urlString != "None") {
+      url = new URL(urlString)
+      queryString = url.search
+    
+      window.location.href = '{% url "app:items" %}' + queryString
+    }
+  })
+
+  document.querySelector('#navigate-page .prev').addEventListener('click', () => {
+    urlString = '{{ data.previous }}'
+    if (urlString != "None") {
+      url = new URL(urlString)
+      queryString = url.search
+    
+      window.location.href = '{% url "app:items" %}' + queryString
+    }
+  })
+</script>
+
+{% endblock %}

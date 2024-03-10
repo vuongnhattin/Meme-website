@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br>
+<button id="download-all-meme"onclick="downloadAll()">Download all memes</button>
+<ul class="container">
+  {% for item in data.results %}
+    <li class="frame cart-item" data-id="{{ item.id }}">
+      <p>{{ item.item.name }}</p>
+      <img src="{{ item.item.image }}" alt=""><br>
+      <div class="action-area">
+        <button onclick="download('{{ item.item.id }}', '{{ item.item.image }}')">Download</button>
+        <button onclick="removeFromCart('{{ item.id }}')">Remove from cart</button>
+      </div>
+    </li>
+  {% endfor %}
+</ul>
+
+<script>
+  function downloadAll() {
+    var endpoint = "{% url 'api:download' %}"
+
+    fetch(endpoint)
+    .then(response => response.blob())
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+
+      link.href = url;
+      filename = 'archive.zip'
+      link.download = filename;
+      document.body.appendChild(link);
+      
+      link.click();
+      
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    })
+    .catch(error => {
+      console.error('There was a problem with the fetch operation:', error);
+    });
+  }
+
+  function removeFromCart(item_id) {
+    var endpoint = "{% url 'api:single_cart' pk=0 %}".replace("0", item_id)
+    
+    fetch(endpoint, {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: '{}'
+    })
+    .then(r => r.json())
+    .then(data => {
+      element = document.querySelector(`.cart-item[data-id="${item_id}"]`)
+      element.remove()
+    })
+  }
+</script>
+{% endblock %}

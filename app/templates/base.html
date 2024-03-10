@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <title>This is title</title>
+</head>
+<body>
+  {% include 'partials/_header.html' %}
+
+  <main>{% block content %} {% endblock %}</main>
+
+  <script>
+    function download(item_id, item_url) {
+    var endpoint = "{% url 'api:single_download' pk=0 %}".replace("0", item_id)
+
+    fetch(endpoint)
+    .then(response => response.blob())
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+
+      link.href = url;
+      filename = item_url.substring(item_url.lastIndexOf('/') + 1)
+      link.download = filename;
+      document.body.appendChild(link);
+      
+      link.click();
+      
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    })
+    .catch(error => {
+      console.error('There was a problem with the fetch operation:', error);
+    });
+  }
+  </script>
+</body>
+</html>
+

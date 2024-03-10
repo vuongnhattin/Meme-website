@@ -1,0 +1,80 @@
+{% extends 'items.html' %}
+
+{% block filter %}
+<!-- <details id="filter-bar">
+  <summary>Filter</summary>
+  <ul>
+    <li>
+      <label for="Approved">Approved</label>
+      <input type="checkbox" name="Approved">
+    </li>
+    <li>
+      <label for="Ascending">Ascending</label>
+      <input type="checkbox" name="Ascending">
+  </ul>
+</details> -->
+{% endblock %}
+
+{% block approved-status %}
+  <div id="approved-status" data-id="{{ item.id }}" class="status">Approved status: {{ item.approved }}</div>
+{% endblock %}
+
+
+{% block extra_actions %}
+<button id="change-status" onclick="changeApproveStatus('{{ item.id }}', '{{ item.approved }}')">Change status</button><br>
+<button onclick="deleteItem('{{ item.id }}')">Delete item</button>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function changeApproveStatus(item_id, item_status) {
+    let endpoint = "{% url 'api:single_item' pk=0 %}".replace("0", item_id)
+    const newStatus = (item_status == 'True') ? "False" : "True" 
+    const payload = {
+      'approved': newStatus
+    }
+
+    fetch(endpoint, 
+    {
+      method: 'PATCH',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(window.location.reload())
+  } 
+
+  function deleteItem(item_id) {
+    var endpoint = "{% url 'api:single_item' pk=0 %}".replace("0", item_id)
+    
+    fetch(endpoint, {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: '{}'
+    })
+    .then(r => {
+      element = document.querySelector(`.home-item[data-id="${item_id}"]`)
+      element.remove()
+    })
+  }
+
+  // window.onload = function() {
+  //   status = document.getElementById('filter-bar')
+  //   a = document.querySelector('#filter-bar input')
+  //   console.log(a)
+  //   endpoint = '{% url "api:items" %}' + `?approved=${status}`
+  //   fetch(endpoint)
+  //   .then(r => r.json())
+  //   .then(data => {
+  //     console.log(data)
+  //   })
+  // }
+</script>
+{% endblock %}
